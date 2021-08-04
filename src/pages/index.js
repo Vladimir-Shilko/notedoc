@@ -75,22 +75,27 @@ export default (() => {
 		setValue(value+1);
 		setNotes([...notes, value])
 	}
-	function removeItem(note)
+	function sendDoc(index)
 	{
-		let index = notes.indexOf(note)
-		//let index = 0
-		//setNotes(prevState => prevState.filter(el => el.id !== id))
-		//setNotes(prevState => prevState.filter(el => notes.indexOf(el) != index))
-		//
-		//console.log(index);
-		//console.log(ind);
+		try
+		{
+			let recipients = notes[index].recipient.split(',')
+				//recipients.forEach()
+			let database = firebase.database().ref('users/shilko02/userDocs/inbox/'+index).set(
+				{
+					dateOfTheEnd:notes[index].dateOfTheEnd,
+					dateOfTheCreate:notes[index].dateOfTheCreate,
+					description:notes[index].description,
+					recipient:notes[index].recipient
+				}
+			)
+		}
+		catch (error)
+		{
+			console.log(error.message)
+			//throw error
+		}
 
-		//setValue(index)
-		setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
-		var arr = [...notes]
-		arr.splice(index,1);
-		setNotes(arr);
-	//	ind--;
 	}
 	function remItem(index) {
 		setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
@@ -100,7 +105,7 @@ export default (() => {
 		 // 	{note}
 		 // </p>;
 		return<Box key = {note.description} height="100px">
-				<Input value={note.description} height="95px" position="relative" bottom="20px" type="text" />
+				<Input value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
 				<Button  height="95px" position="relative" bottom="20px">
 					скачать
 				</Button>
@@ -114,12 +119,12 @@ export default (() => {
 					<Input  type="file" width="230px" />
 					загрузить
 				</Button>
-				<Button  width="260px" overflow-x="visible" display="inline-block">
-					<Input value={note.dateOfTheCreate} type="date" display="block" />
-					<Input value={new Date(note.dateOfTheEnd)} type="date" position="relative" right="36px" left="-4px" />
+				<Button onClick={() => {sendDoc(index)}} width="260px" overflow-x="visible" display="inline-block">
+					<Input type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
+					<Input type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}  position="relative" right="36px" left="-4px" />
 					отправить
 				</Button>
-				<Input value={note.recipient} height="95px" position="relative" bottom="20px" />
+				<Input value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" />
 				<Button  onClick={() => remItem(index)}
 					width="80px"
 					height="95px"
