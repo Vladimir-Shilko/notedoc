@@ -44,28 +44,38 @@ export default (() => {
 			setNotes([]);
 			setEmail(email);
 			setId(data.user.uid)
-			let login = email.substr(0,email.indexOf('@'))
+			const login = email.substr(0, email.indexOf('@'));
 			alert(login);
 			var user;
-			var username;
+			var userdocs;
 			let database = firebase.database().ref().child('users');
 			database.child(login).on('value', function(snap)
 			{
 				user = snap.val();
-				username = user.userDocs.inbox;
-				console.log(username)
-				setNotes([...notes,...username])
+				userdocs = user.userDocs.inbox;
+				console.log(userdocs)
+				for(let i = 0; i < userdocs.length;i++)
+				{
+					console.log(userdocs[i]);
+					if(userdocs[i] == null)
+					{
+						userdocs.splice(i, 1);
+					}
+				}
+				setNotes([...notes,...userdocs])
+				//login = 'test';
+				let database = firebase.database().ref('users/'+login+'/userDocs/inbox/').set([...userdocs])
 			})
 			//setNotes([...notes, ...username])
 
 		} catch (error) {
 			console.log(error.message)
-			throw error
+			//throw error
 		}
 	}
 	let ind = [];
 	const [notes, setNotes] = useState([]);
-	const [value, setValue] = useState(0);
+	const [value, setValue] = useState();
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('');
 	const [id, setId] = useState('')
@@ -73,22 +83,30 @@ export default (() => {
 	function createDoc()
 	{
 		setValue(value+1);
-		setNotes([...notes, value])
+		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '',}]);
 	}
 	function sendDoc(index)
 	{
 		try
 		{
 			let recipients = notes[index].recipient.split(',')
-				//recipients.forEach()
-			let database = firebase.database().ref('users/shilko02/userDocs/inbox/'+index).set(
+			recipients.push('shilko02')
+				recipients.forEach(function(item, i, arr)
 				{
-					dateOfTheEnd:notes[index].dateOfTheEnd,
-					dateOfTheCreate:notes[index].dateOfTheCreate,
-					description:notes[index].description,
-					recipient:notes[index].recipient
-				}
-			)
+					if(item != null)
+					{
+						let database = firebase.database().ref('users/'+item+'/userDocs/inbox/'+index).set(
+							{
+								dateOfTheEnd:notes[index].dateOfTheEnd,
+								dateOfTheCreate:notes[index].dateOfTheCreate,
+								description:notes[index].description,
+								recipient:notes[index].recipient
+							}
+						)
+					}
+					//console.log(item)
+				})
+
 		}
 		catch (error)
 		{
@@ -100,11 +118,13 @@ export default (() => {
 	function remItem(index) {
 		setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
 	}
-	const result = notes.map((note, index) => {
-		 // return <p key={index} onClick={() => remItem(index)}>
-		 // 	{note}
-		 // </p>;
-		return<Box key = {note.description} height="100px">
+	try
+	{
+		var result = notes.map((note, index) => {
+			// return <p key={index} onClick={() => remItem(index)}>
+			// 	{note}
+			// </p>;
+			return<Box key = {note.description} height="100px">
 				<Input value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
 				<Button  height="95px" position="relative" bottom="20px">
 					скачать
@@ -126,11 +146,11 @@ export default (() => {
 				</Button>
 				<Input value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" />
 				<Button  onClick={() => remItem(index)}
-					width="80px"
-					height="95px"
-					position="relative"
-					bottom="20px"
-					background="#cc0003"
+						 width="80px"
+						 height="95px"
+						 position="relative"
+						 bottom="20px"
+						 background="#cc0003"
 				>
 					удалить
 				</Button>
@@ -138,8 +158,14 @@ export default (() => {
 
 
 
-		//index++;
-	});
+			//index++;
+		});
+	}
+	catch(error)
+	{
+
+	}
+
 	return <Theme theme={theme}>
 		<GlobalQuarklyPageStyles pageUrl={"index"} />
 		<Helmet>
@@ -236,7 +262,7 @@ export default (() => {
 		<div>
 				{result}
 			<input value={value} onChange={event => setValue(event.target.value)} />
-			<button onClick={() => {setValue(value+1);setNotes([...notes, value])}}>add</button>
+			<button onClick={() => createDoc()}>add</button>
 		</div>;
 		<Link
 			font={"--capture"}
