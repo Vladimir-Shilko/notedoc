@@ -35,36 +35,49 @@ export default (() => {
 			throw error
 		}
 	}
+	let userLogin;
 	async function login(email, password) {
 		email = prompt('введите свою почту');
 		password = prompt('введите пароль');
 		try {
 			const data = await firebase.auth().signInWithEmailAndPassword(email, password)
 			console.log(data.user.uid)
+			setAddDisabled(false)
 			setNotes([]);
 			setEmail(email);
 			setId(data.user.uid)
-			const login = email.substr(0, email.indexOf('@'));
-			alert(login);
+			userLogin = email.substr(0, email.indexOf('@'));
+			setLog(userLogin);
+			alert(userLogin);
 			var user;
 			var userdocs;
+			//	createDoc();
+			//	let startBase = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([{dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000)}])
 			let database = firebase.database().ref().child('users');
-			database.child(login).on('value', function(snap)
+			database.child(userLogin).on('value', function(snap)
 			{
 				user = snap.val();
 				userdocs = user.userDocs.inbox;
 				console.log(userdocs)
-				for(let i = 0; i < userdocs.length;i++)
+				if(userdocs == null)
 				{
-					console.log(userdocs[i]);
-					if(userdocs[i] == null)
-					{
-						userdocs.splice(i, 1);
-					}
+
 				}
-				setNotes([...notes,...userdocs])
-				//login = 'test';
-				let database = firebase.database().ref('users/'+login+'/userDocs/inbox/').set([...userdocs])
+				else
+				{
+					for(let i = 0; i < userdocs.length;i++)
+					{
+						console.log(userdocs[i]);
+						if(userdocs[i] == null)
+						{
+							userdocs.splice(i, 1);
+						}
+					}
+					//setNotes([...notes,...userdocs])
+					setNotes([...userdocs])
+					//login = 'test';
+					let database = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([...userdocs])
+				}
 			})
 			//setNotes([...notes, ...username])
 
@@ -79,33 +92,98 @@ export default (() => {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('');
 	const [id, setId] = useState('')
+	const[log, setLog] = useState('')
+	const [lengthOfDocs, setlen] = useState();
+	const [buttonAddDisabled, setAddDisabled] = useState(true);
 	//let ind = -1;
 	function createDoc()
 	{
 		setValue(value+1);
-		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '',}]);
+		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000),sender: log}]);
 	}
 	function sendDoc(index)
 	{
 		try
 		{
 			let recipients = notes[index].recipient.split(',')
-			recipients.push('shilko02')
-				recipients.forEach(function(item, i, arr)
+			//recipients.push(log)
+			alert(log)
+			let database = firebase.database().ref('users/'+log+'/userDocs/inbox/'+index).set(
 				{
-					if(item != null)
-					{
-						let database = firebase.database().ref('users/'+item+'/userDocs/inbox/'+index).set(
+					dateOfTheEnd:notes[index].dateOfTheEnd,
+					dateOfTheCreate:notes[index].dateOfTheCreate,
+					description:notes[index].description,
+					recipient:notes[index].recipient,
+					idDocument:notes[index].idDocument,
+					sender:notes[index].sender
+				}
+			)
+			recipients.forEach(function(item, i, arr)
+			{
+				//console.log(item);
+				if(item != null)
+				{
+					const dbRef = firebase.database().ref();
+					dbRef.child("users").child(item).child('userDocs').child('inbox').get().then((snapshot) => {
+						if (snapshot.exists()) {
+							//let userl = snapshot.val();
+							let userdocsin = snapshot.val();
+							if(userdocsin == null || userdocsin.length == null)
 							{
-								dateOfTheEnd:notes[index].dateOfTheEnd,
-								dateOfTheCreate:notes[index].dateOfTheCreate,
-								description:notes[index].description,
-								recipient:notes[index].recipient
+								let database = firebase.database().ref('users/'+item+'/userDocs/inbox/0').set(
+									{
+										dateOfTheEnd:notes[index].dateOfTheEnd,
+										dateOfTheCreate:notes[index].dateOfTheCreate,
+										description:notes[index].description,
+										recipient:notes[index].recipient,
+										idDocument:notes[index].idDocument,
+										sender:notes[index].sender
+									}
+								)
 							}
-						)
-					}
-					//console.log(item)
-				})
+							else
+							{
+								console.log(userdocsin)
+								setlen(userdocsin.length)
+								console.log(lengthOfDocs);
+								//let e = prompt('dd')
+								for(let i = 0; i <= userdocsin.length;i++)
+								{
+									console.log(userdocsin[i]);
+									if(userdocsin[i] == null)
+									{
+										alert(i)
+										let database = firebase.database().ref('users/'+item+'/userDocs/inbox/'+i).set(
+											{
+												dateOfTheEnd:notes[index].dateOfTheEnd,
+												dateOfTheCreate:notes[index].dateOfTheCreate,
+												description:notes[index].description,
+												recipient:notes[index].recipient,
+												idDocument:notes[index].idDocument,
+												sender:notes[index].sender
+											}
+										)
+									}
+									console.log(lengthOfDocs)
+								}
+								//setNotes([...notes,...userdocsin])
+							}
+
+						} else {
+							let database = firebase.database().ref('users/'+item+'/userDocs/inbox/0').set(
+								{
+									dateOfTheEnd:notes[index].dateOfTheEnd,
+									dateOfTheCreate:notes[index].dateOfTheCreate,
+									description:notes[index].description,
+									recipient:notes[index].recipient,
+									idDocument:notes[index].idDocument,
+									sender:notes[index].sender
+								}
+							)
+						}
+					})
+				}
+			})
 
 		}
 		catch (error)
@@ -116,6 +194,65 @@ export default (() => {
 
 	}
 	function remItem(index) {
+		try
+		{
+			let recipients = notes[index].recipient.split(',');
+			let removeId = notes[index].idDocument;
+			recipients.push(log);
+			recipients.forEach(function(item, i, arr)
+			{
+				if(item != null)
+				{
+					let database = firebase.database().ref().child('users').child(item).child('userDocs');
+					database.on('value', function (docsRef)
+					{
+						let docs = docsRef.val();
+						if(docs != null)
+						{
+							let inbox = docs.inbox;
+							if(inbox != null)
+							{
+								if(inbox.length != null)
+								{
+									for(let i = 0; i < inbox.length; i++)
+									{
+										if(removeId === inbox[i].idDocument)
+										{
+											//let removingElem = firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').
+											//inbox.i = null;
+											//inbox[i].removeValue();
+											firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').child(i).remove();
+										}
+									}
+								}
+
+							}
+						}
+
+						// if(inbox.length != null)
+						// {
+						// 	for(let i = 0; i < inbox.length; i++)
+						// 	{
+						// 		if(removeId === inbox[i].idDocument)
+						// 		{
+						// 			//let removingElem = firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').
+						// 			//inbox.i = null;
+						// 			//inbox[i].removeValue();
+						// 			firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').child(i).remove();
+						// 		}
+						// 	}
+						// }
+
+					})
+				}
+			})
+		}
+		catch(error)
+		{
+			console.log(error)
+		}
+
+		// let database = firebase.database().ref().child('users').child('');
 		setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
 	}
 	try
@@ -139,12 +276,26 @@ export default (() => {
 					<Input  type="file" width="230px" />
 					загрузить
 				</Button>
-				<Button onClick={() => {sendDoc(index)}} width="260px" overflow-x="visible" display="inline-block">
-					<Input type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
-					<Input type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}  position="relative" right="36px" left="-4px" />
+				<Button>
+					<Input type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}/>
+					<Input type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
+				</Button>
+				<Button onClick={() => {sendDoc(index)}}
+					width="110px"
+					overflow-x="visible"
+					display="inline-block"
+					height="95px"
+					position="relative"
+					bottom="20px"
+				>
 					отправить
 				</Button>
-				<Input value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" />
+				{/*<Button onClick={() => {sendDoc(index)}} width="260px" overflow-x="visible" display="inline-block">*!/*/}
+				{/*/!*	<Input type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />*!/*/}
+				{/*/!*	<Input type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}  position="relative" right="36px" left="-4px" />*!/*/}
+				{/*отправить*/}
+				{/*</Button>*/}
+				<Input value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px" />
 				<Button  onClick={() => remItem(index)}
 						 width="80px"
 						 height="95px"
@@ -243,9 +394,30 @@ export default (() => {
 				<Input type="file" width="230px" />
 				загрузить
 			</Button>
-			<Button width="260px" overflow-x="visible" display="inline-block">
-				<Input type="date" display="block" />
-				<Input type="date" position="relative" right="36px" left="-4px" />
+			<Input
+				type="date"
+				position="absolute"
+				bottom="160px"
+				height="45px"
+				top="250px"
+				max-width="140px"
+			/>
+			<Input
+				position="relative"
+				type="date"
+				height="45px"
+				top="5px"
+				bottom={0}
+				max-width="140px"
+			/>
+			<Button
+				width="110px"
+				overflow-x="visible"
+				display="inline-block"
+				height="95px"
+				position="relative"
+				bottom="20px"
+			>
 				отправить
 			</Button>
 			<Input height="95px" position="relative" bottom="20px" />
@@ -260,9 +432,9 @@ export default (() => {
 			</Button>
 		</Box>
 		<div>
-				{result}
+			{result}
 			<input value={value} onChange={event => setValue(event.target.value)} />
-			<button onClick={() => createDoc()}>add</button>
+			<button disabled = {buttonAddDisabled} onClick={() => createDoc()}>add</button>
 		</div>;
 		<Link
 			font={"--capture"}
