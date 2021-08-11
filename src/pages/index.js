@@ -24,6 +24,7 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
+
 export default (() => {
 
 	async function registration(email, password) {
@@ -49,8 +50,8 @@ export default (() => {
 			userLogin = email.substr(0, email.indexOf('@'));
 			setLog(userLogin);
 			alert(userLogin);
-			var user;
-			var userdocs;
+			let user;
+			let userdocs;
 			//	createDoc();
 			//	let startBase = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([{dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000)}])
 			let database = firebase.database().ref().child('users');
@@ -71,6 +72,11 @@ export default (() => {
 						if(userdocs[i] == null)
 						{
 							userdocs.splice(i, 1);
+						}
+						else
+						{
+
+
 						}
 					}
 					//setNotes([...notes,...userdocs])
@@ -95,16 +101,27 @@ export default (() => {
 	const[log, setLog] = useState('')
 	const [lengthOfDocs, setlen] = useState();
 	const [buttonAddDisabled, setAddDisabled] = useState(true);
-	//let ind = -1;
+	const [file, setFile] = useState([]);
+	var myFiles = [];
+	var metadata = {
+		contentType: 'image/jpeg'
+	};
+
 	function createDoc()
 	{
 		setValue(value+1);
-		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000),sender: log}]);
+		setFile([...file, null])
+		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000),sender: log, filePath: ''}]);
 	}
 	function sendDoc(index)
 	{
 		try
 		{
+			let storage = firebase.storage().ref()
+			//let indexFile = (file[index].length-1)
+			let indexFile = (myFiles[index].length-1)
+			let uploadFile = storage.child('images/'+notes[index].idDocument).put(myFiles[index][0])
+			//storage.put(file[0])
 			let recipients = notes[index].recipient.split(',')
 			//recipients.push(log)
 			alert(log)
@@ -216,7 +233,8 @@ export default (() => {
 								{
 									for(let i = 0; i < inbox.length; i++)
 									{
-										if(removeId === inbox[i].idDocument)
+
+										if( inbox[i] != null && removeId === inbox[i].idDocument)
 										{
 											//let removingElem = firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').
 											//inbox.i = null;
@@ -255,6 +273,61 @@ export default (() => {
 		// let database = firebase.database().ref().child('users').child('');
 		setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
 	}
+	function downloadFile(index)
+	{
+			if(notes[index].idDocument != null)
+			{
+				let fileName = notes[index].idDocument;
+				let storageRef = firebase.storage().ref();
+				storageRef.child('images/'+fileName).getDownloadURL().then((url) => {
+					window.open(url);
+					// let xhr = new XMLHttpRequest();
+					// xhr.responseType = 'blob';
+					// xhr.onload = (event) => {let blob = xhr.response};
+					// xhr.open('GET',url);
+					// xhr.send();
+				}).catch((error) => {alert('файл не существует')});
+			}
+	}
+	function loadOutBox()
+	{
+		setAddDisabled(false)
+		setNotes([]);
+		let user; let userdocsOut;
+		let database = firebase.database().ref().child('users');
+		database.child(log).on('value', function(snap)
+		{
+			user = snap.val();
+			userdocsOut = user.userDocs.outbox;
+			console.log(userdocsOut)
+			if(userdocsOut == null)
+			{
+
+			}
+			else
+			{
+				for(let i = 0; i < userdocsOut.length;i++)
+				{
+					console.log(userdocsOut[i]);
+					if(userdocsOut[i] == null)
+					{
+						userdocsOut.splice(i, 1);
+					}
+					else
+					{
+
+
+					}
+				}
+				//setNotes([...notes,...userdocs])
+				setNotes([...userdocsOut])
+				//login = 'test';
+				let database = firebase.database().ref('users/'+userLogin+'/userDocs/outbox/').set([...userdocsOut])
+			}
+		})
+		//setNotes([...notes, ...username])
+
+	}
 	try
 	{
 		var result = notes.map((note, index) => {
@@ -263,7 +336,7 @@ export default (() => {
 			// </p>;
 			return<Box key = {note.description} height="100px">
 				<Input value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
-				<Button  height="95px" position="relative" bottom="20px">
+				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" bottom="20px">
 					скачать
 				</Button>
 				<Button
@@ -273,7 +346,7 @@ export default (() => {
 					display="inline"
 					width="350px"
 				>
-					<Input  type="file" width="230px" />
+					<Input  type="file" onChange={event =>{myFiles[index] = event.target.files; console.log(event.target.files)}} width="230px" />
 					загрузить
 				</Button>
 				<Button>
@@ -317,7 +390,7 @@ export default (() => {
 
 	}
 
-	return <Theme theme={theme}>
+	return (<Theme theme={theme}>
 		<GlobalQuarklyPageStyles pageUrl={"index"} />
 		<Helmet>
 			<title>
@@ -365,7 +438,7 @@ export default (() => {
 			<Button>
 				входящие
 			</Button>
-			<Button>
+			<Button onClick={() => loadOutBox()}>
 				исходящие
 			</Button>
 			<Button>
@@ -463,6 +536,6 @@ export default (() => {
 				{":root {\n  box-sizing: border-box;\n}\n\n* {\n  box-sizing: inherit;\n}"}
 			</style>
 		</RawHtml>
-	</Theme>;
+	</Theme>)
 
 });
