@@ -111,80 +111,104 @@ export default (() => {
 	var metadata = {
 		contentType: 'image/jpeg'
 	};
-	// useEffect(() =>
-	// {
-	// 	//setColors([])
-	// 	notes.forEach(function(item, i, arr)
-	// 	{
-	// 		if(Date.now() >= +(new Date(Date.parse(item.dateOfTheEnd))))
-	// 		{
-	// 			let recipients = item.recipient.split(',')
-	//
-	// 			const dbRef = firebase.database().ref();
-	// 			dbRef.child("users").child(item).child('userDocs').child('overdue').get().then((snapshot) => {
-	// 				if (snapshot.exists()) {
-	// 					//let userl = snapshot.val();
-	// 					let userdocsin = snapshot.val();
-	// 					if(userdocsin == null || userdocsin.length == null)
-	// 					{
-	// 						let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
-	// 							{
-	// 								dateOfTheEnd:notes[i].dateOfTheEnd,
-	// 								dateOfTheCreate:notes[i].dateOfTheCreate,
-	// 								description:notes[i].description,
-	// 								recipient:notes[i].recipient,
-	// 								idDocument:notes[i].idDocument,
-	// 								sender:notes[i].sender
-	// 							}
-	// 						)
-	// 					}
-	// 					else
-	// 					{
-	// 						console.log(userdocsin)
-	// 						setlen(userdocsin.length)
-	// 						console.log(lengthOfDocs);
-	// 						//let e = prompt('dd')
-	// 						for(let i = 0; i <= userdocsin.length;i++)
-	// 						{
-	// 							console.log(userdocsin[i]);
-	// 							if(userdocsin[i] == null)
-	// 							{
-	// 								alert(i)
-	// 								let database = firebase.database().ref('users/'+item+'/userDocs/overdue/'+i).set(
-	// 									{
-	// 										dateOfTheEnd:notes[i].dateOfTheEnd,
-	// 										dateOfTheCreate:notes[i].dateOfTheCreate,
-	// 										description:notes[i].description,
-	// 										recipient:notes[i].recipient,
-	// 										idDocument:notes[i].idDocument,
-	// 										sender:notes[i].sender
-	// 									}
-	// 								)
-	// 							}
-	// 							console.log(lengthOfDocs)
-	// 						}
-	// 						//setNotes([...notes,...userdocsin])
-	// 					}
-	// 				} else {
-	// 					let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
-	// 						{
-	// 							dateOfTheEnd:notes[i].dateOfTheEnd,
-	// 							dateOfTheCreate:notes[i].dateOfTheCreate,
-	// 							description:notes[i].description,
-	// 							recipient:notes[i].recipient,
-	// 							idDocument:notes[i].idDocument,
-	// 							sender:notes[i].sender
-	// 						}
-	// 					)
-	// 				}
-	// 			})
-	//
-	// 		}
-	// 		else
-	// 		{
-	// 		}
-	// 	})
-	// })
+	useEffect(() =>
+	{
+		// try
+		// {
+		// 	notes.forEach(function (note, i, allNotes)
+		// 	{
+		//
+		// 	})
+		// }
+		// catch(error)
+		// {
+		// 	console.log(error)
+		// }
+		//setColors([])
+		// try
+		// {
+		// 	notes.forEach(function(note, i, allnotes)
+		// 	{
+		// 		if(+(Date.now()) >= +(new Date(Date.parse(note.dateOfTheEnd))))
+		// 		{
+		// 			alert(+(new Date(Date.parse(note.dateOfTheEnd))))
+		// 			let recipients = note.recipient.split(',')
+		//
+		// 			recipients.forEach(function (item, i,arr)
+		// 			{
+		// 				const dbRef = firebase.database().ref();
+		// 				dbRef.child("users").child(item).child('userDocs').child('overdue').get().then((snapshot) => {
+		// 					if (snapshot.exists()) {
+		// 						//let userl = snapshot.val();
+		// 						let userdocsin = snapshot.val();
+		// 						if(userdocsin == null || userdocsin.length == null)
+		// 						{
+		// 							let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
+		// 								{
+		// 									dateOfTheEnd:note.dateOfTheEnd,
+		// 									dateOfTheCreate:note.dateOfTheCreate,
+		// 									description:note.description,
+		// 									recipient:note.recipient,
+		// 									idDocument:note.idDocument,
+		// 									sender:note.sender
+		// 								}
+		// 							)
+		// 						}
+		// 						else
+		// 						{
+		// 							console.log(userdocsin)
+		// 								//setlen(userdocsin.length)
+		// 							console.log(lengthOfDocs);
+		// 							//let e = prompt('dd')
+		// 							// for(let i = 0; i < allnotes.length;i++)
+		// 							// {
+		// 								console.log(userdocsin[i]);
+		// 								if(userdocsin[i] == null)
+		// 								{
+		// 									alert(i)
+		// 									let database = firebase.database().ref('users/'+item+'/userDocs/overdue/'+i).set(
+		// 										{
+		// 											dateOfTheEnd:note.dateOfTheEnd,
+		// 											dateOfTheCreate:note.dateOfTheCreate,
+		// 											description:note.description,
+		// 											recipient:note.recipient,
+		// 											idDocument:note.idDocument,
+		// 											sender:note.sender
+		// 										}
+		// 									)
+		// 								//}
+		// 								console.log(lengthOfDocs)
+		// 							}
+		// 							//setNotes([...notes,...userdocsin])
+		// 						}
+		// 					} else {
+		// 						let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
+		// 							{
+		// 								dateOfTheEnd:note.dateOfTheEnd,
+		// 								dateOfTheCreate:note.dateOfTheCreate,
+		// 								description:note.description,
+		// 								recipient:note.recipient,
+		// 								idDocument:note.idDocument,
+		// 								sender:note.sender
+		// 							}
+		// 						)
+		// 					}
+		// 				})
+		// 			})
+		//
+		//
+		// 		}
+		// 		else
+		// 		{
+		// 		}
+		// 	})
+		// }
+		// catch(error)
+		// {
+		// 	console.log(error)
+		// }
+
+	})
 	function sendDoc(index)
 	{
 		try
@@ -458,6 +482,45 @@ export default (() => {
 			}
 		})
 	}
+	function loadOverdue()
+	{
+		setNotes([])
+		let dataDocs = firebase.database().ref().child('users/'+log+'/userDocs')
+		dataDocs.on('value', function (docs)
+		{
+			let alldocs = docs.val();
+			if(alldocs == null) return 0;
+			let inbox = [];
+			let outbox = [];
+			if(alldocs.inbox != null)
+			{
+				inbox = alldocs.inbox;
+				for(let i = 0; i < inbox.length; i++)
+				{
+					if(inbox[i] == null) continue;
+					if(+(Date.now()) < +(new Date(Date.parse(inbox[i].dateOfTheEnd))))
+					{
+						inbox.splice(i,1);
+					}
+
+				}
+			}
+			if(alldocs.outbox != null)
+			{
+				outbox = alldocs.outbox;
+				for(let i = 0; i < outbox.length; i++)
+				{
+					if(outbox[i] == null) continue;
+					if(+(Date.now()) < +(new Date(Date.parse(outbox[i].dateOfTheEnd))))
+					{
+						outbox.splice(i,1);
+					}
+				}
+			}
+			setNotes([...inbox, ...outbox])
+			let database = firebase.database().ref('users/'+log+'/userDocs/overdue/').set([...inbox, ...outbox])
+		})
+	}
 	async function createDoc()
 	{
 		//await loadOutBox();
@@ -578,7 +641,7 @@ export default (() => {
 			<Button>
 				ожидают подтверждения
 			</Button>
-			<Button>
+			<Button onClick={() => loadOverdue()}>
 				просроченные
 			</Button>
 			<Button>
