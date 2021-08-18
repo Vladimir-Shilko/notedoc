@@ -4,6 +4,7 @@ import { Theme, Link, Text, Box, Button, Image, Section, Input } from "@quarkly/
 import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "global-page-styles";
 import { RawHtml } from "@quarkly/components";
+import { Multiselect } from 'multiselect-react-dropdown';
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
@@ -31,7 +32,15 @@ export default (() => {
 	async function registration(email, password) {
 		try {
 			const data = await firebase.auth().createUserWithEmailAndPassword(email, password)
-			console.log(data.user.uid)
+			userLogin = email.substr(0, email.indexOf('@'));
+			firebase.database().ref().child(userLogin).child('userInfo').set(
+				{
+					login: userLogin,
+					email: email,
+					password: password,
+					id: data.user.uid
+				}
+			)
 		} catch (error) {
 			console.log(error.message)
 			throw error
@@ -39,13 +48,50 @@ export default (() => {
 	}
 	let userLogin;
 	const [isAuth, setIsAuth] = useState(false);
-	async function login(email, password) {
+	function checkLogin()
+	{
+		let email;
+		let password;
+		if(localStorage.id != null)
+		{
+			let id = localStorage.id;
+			let users = firebase.database().ref().child('users').get().then((snap) =>
+			{
+				if(snap.exists())
+				{
+					let userss = snap.val();
+					console.log(userss)
+					for (let key in userss)
+					{
+						if(userss[key].userInfo != null && userss[key].userInfo.id === id)
+						{
+							alert(userss[key].userInfo.email)
+							alert(userss[key].userInfo.id)
+							email = userss[key].userInfo.email;
+							password = userss[key].userInfo.password;
+							setEmail(userss[key].userInfo.email);
+							setPassword((userss[key].userInfo.password));
+							login(email, password)
+						}
+					}
+				}
+			});
 
-		email = prompt('введите свою почту');
-		password = prompt('введите пароль');
+		}
+		else
+		{
+			email = prompt('введите свою почту');
+			password = prompt('введите пароль');
+			setEmail(email); setPassword(password)
+			login(email, password)
+		}
+	}
+	async function login(email, password) {
 		try {
+			alert(email)
 			const data = await firebase.auth().signInWithEmailAndPassword(email, password)
 			setIsAuth(true);
+			localStorage.setItem('id', data.user.uid)
 			console.log(data.user.uid)
 			//setAddDisabled(false)
 			setNotes([]);
@@ -57,6 +103,11 @@ export default (() => {
 			let user;
 			let userdocs;
 			//	createDoc();
+			let users = firebase.database().ref().child('users');
+			users.on('value', function(users)
+			{
+				setUsersName([...Object.keys(users.val())])
+			})
 			//	let startBase = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([{dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000)}])
 			let database = firebase.database().ref().child('users');
 			database.child(userLogin).on('value', function(snap)
@@ -97,6 +148,14 @@ export default (() => {
 		}
 	}
 	let ind = [];
+	let multiselect_css =
+		{
+			width: "200px",
+			display: 'block',
+			border: '1px',
+			solid: '#cdd6f3',
+			color: '#a8acc9',
+		}
 	const [notes, setNotes] = useState([]);
 	const [value, setValue] = useState();
 	const [email, setEmail] = useState('')
@@ -107,6 +166,11 @@ export default (() => {
 	const [buttonAddDisabled, setAddDisabled] = useState(true);
 	const [file, setFile] = useState([]);
 	const [colors, setColors] = useState([])
+	const [usersName, setUsersName] = useState([])
+	//var recipients_ = []
+	// this.state = {
+	// 	options: [{name: 'Srigar', id: 1},{name: 'Sam', id: 2}]
+	// };
 	var myFiles = [];
 	var metadata = {
 		contentType: 'image/jpeg'
@@ -560,12 +624,24 @@ export default (() => {
 				>
 					отправить
 				</Button>
-				{/*<Button onClick={() => {sendDoc(index)}} width="260px" overflow-x="visible" display="inline-block">*!/*/}
-				{/*/!*	<Input type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />*!/*/}
-				{/*/!*	<Input type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}  position="relative" right="36px" left="-4px" />*!/*/}
-				{/*отправить*/}
+				{/*<Button width="200px"*/}
+				{/*		max-width="150px"*/}
+				{/*		overflow-x="visible"*/}
+				{/*		display="inline-block"*/}
+				{/*		height="95px"*/}
+				{/*		position="relative"*/}
+				{/*		bottom="20px">*/}
+				{/*		<Multiselect*/}
+				{/*			// options={Object.keys(firebase.database().ref().child('users'))}*/}
+				{/*			style={multiselect_css}*/}
+				{/*			max-width = '100px'*/}
+				{/*			//width = '200px'*/}
+				{/*			options = {usersName}*/}
+				{/*			isObject={false}*/}
+				{/*		/>*/}
 				{/*</Button>*/}
-				<Input disabled = {buttonAddDisabled} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px" />
+				<Input disabled = {buttonAddDisabled} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px">
+				</Input>
 				<Button disabled = {buttonAddDisabled} onClick={() => remItem(index)}
 						 width="80px"
 						 height="95px"
@@ -600,6 +676,11 @@ export default (() => {
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-analytics.js"></script>
 		</body>
+		<Multiselect
+			// options={Object.keys(firebase.database().ref().child('users'))}
+			options = {usersName}
+			isObject={false}
+		/>
 		<Box>
 			<Input value={email} onChange={event => setEmail(event.target.value)} />
 			<Input value={password} onChange={event => setPassword(event.target.value)} />
@@ -625,7 +706,7 @@ export default (() => {
 						ID: {id}
 					</Text>
 				</Box>
-				<Button  onClick={() => login()} position="relative" left="150px">
+				<Button  onClick={() => checkLogin()} position="relative" left="150px">
 					войти
 				</Button>
 				<Image src = {avatarImage} alt = 'avatarImage' width="100px" height="100px" position="relative" left="0px" />
