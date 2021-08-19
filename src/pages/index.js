@@ -12,7 +12,7 @@ import 'firebase/storage'
 import 'firebase/messaging'
 import async from "async";
 import avatarImage from './sale_agent.webp'
-
+import multi from './multiselect.css'
 const firebaseConfig = {
 	apiKey: "AIzaSyD8qxHIjM1Q-z-Z4FwjyZZ1ntCRbQ2WKoI",
 	authDomain: "notedoc-44442.firebaseapp.com",
@@ -32,6 +32,7 @@ export default (() => {
 	async function registration(email, password) {
 		try {
 			const data = await firebase.auth().createUserWithEmailAndPassword(email, password)
+			alert('Вы успешно зарегистрировались');
 			userLogin = email.substr(0, email.indexOf('@'));
 			firebase.database().ref().child(userLogin).child('userInfo').set(
 				{
@@ -65,8 +66,6 @@ export default (() => {
 					{
 						if(userss[key].userInfo != null && userss[key].userInfo.id === id)
 						{
-							alert(userss[key].userInfo.email)
-							alert(userss[key].userInfo.id)
 							email = userss[key].userInfo.email;
 							password = userss[key].userInfo.password;
 							setEmail(userss[key].userInfo.email);
@@ -88,27 +87,25 @@ export default (() => {
 	}
 	async function login(email, password) {
 		try {
-			alert(email)
+			alert('Добро пожаловать, '+email)
 			const data = await firebase.auth().signInWithEmailAndPassword(email, password)
 			setIsAuth(true);
 			localStorage.setItem('id', data.user.uid)
 			console.log(data.user.uid)
 			//setAddDisabled(false)
 			setNotes([]);
+			setAddDisabled(true);
 			setEmail(email);
 			setId(data.user.uid)
 			userLogin = email.substr(0, email.indexOf('@'));
 			setLog(userLogin);
-			alert(userLogin);
 			let user;
 			let userdocs;
-			//	createDoc();
 			let users = firebase.database().ref().child('users');
 			users.on('value', function(users)
 			{
 				setUsersName([...Object.keys(users.val())])
 			})
-			//	let startBase = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([{dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000)}])
 			let database = firebase.database().ref().child('users');
 			database.child(userLogin).on('value', function(snap)
 			{
@@ -120,7 +117,6 @@ export default (() => {
 					console.log(userdocs)
 					if(userdocs == null)
 					{
-
 					}
 					else
 					{
@@ -133,14 +129,12 @@ export default (() => {
 							}
 							else
 							{
-
 							}
 						}
 						setNotes([...userdocs])
 						let database = firebase.database().ref('users/'+userLogin+'/userDocs/inbox/').set([...userdocs])
 					}
 				}
-
 			})
 		} catch (error) {
 			console.log(error.message)
@@ -163,7 +157,7 @@ export default (() => {
 	const [id, setId] = useState('')
 	const[log, setLog] = useState('')
 	const [lengthOfDocs, setlen] = useState();
-	const [buttonAddDisabled, setAddDisabled] = useState(true);
+	const [buttonAddDisabled, setAddDisabled] = useState();
 	const [file, setFile] = useState([]);
 	const [colors, setColors] = useState([])
 	const [usersName, setUsersName] = useState([])
@@ -472,7 +466,7 @@ export default (() => {
 	}
 	function  loadInbox()
 	{
-		setAddDisabled(true);
+		setAddDisabled(true)
 		setNotes([]);
 		setColors([]);
 		let userIn; let userdocsIn;
@@ -510,10 +504,11 @@ export default (() => {
 	function loadOutBox()
 	{
 		setColors([])
-		if(isAuth)
-		{
-			setAddDisabled(false)
-		}
+		setAddDisabled(false)
+		// if(isAuth)
+		// {
+		// 	setAddDisabled(false)
+		// }
 		setNotes([]);
 		let userOut; let userdocsOut;
 		let database = firebase.database().ref().child('users');
@@ -549,6 +544,7 @@ export default (() => {
 	function loadOverdue()
 	{
 		setNotes([])
+		setAddDisabled(true)
 		let dataDocs = firebase.database().ref().child('users/'+log+'/userDocs')
 		dataDocs.on('value', function (docs)
 		{
@@ -566,7 +562,6 @@ export default (() => {
 					{
 						inbox.splice(i,1);
 					}
-
 				}
 			}
 			if(alldocs.outbox != null)
@@ -595,8 +590,9 @@ export default (() => {
 	try
 	{
 		var result = notes.map((note, index) => {
-			return<Box disabled = {buttonAddDisabled} key = {note.documentId} height="100px">
-				<Input disabled = {buttonAddDisabled} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
+			return(<div>
+				<Box disabled = {!(log === note.sender)} key = {note.documentId} height="100px">
+				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
 				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" bottom="20px">
 					скачать
 				</Button>
@@ -611,17 +607,22 @@ export default (() => {
 					загрузить
 				</Button>
 				<Button background = {colors[index]}>
-					<Input disabled = {buttonAddDisabled} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}/>
-					<Input disabled = {buttonAddDisabled} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
+					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}/>
+					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
 				</Button>
-				<Button disabled = {buttonAddDisabled} onClick={() => {sendDoc(index)}}
+				<Button  onClick={() => {sendDoc(index)}}
 					width="110px"
 					overflow-x="visible"
 					display="inline-block"
 					height="95px"
 					position="relative"
 					bottom="20px"
+						 color="#000000"
 				>
+					{/*<Multiselect*/}
+					{/*// options={Object.keys(firebase.database().ref().child('users'))}*/}
+					{/*options = {usersName}*/}
+					{/*isObject={false}></Multiselect>*/}
 					отправить
 				</Button>
 				{/*<Button width="200px"*/}
@@ -640,9 +641,9 @@ export default (() => {
 				{/*			isObject={false}*/}
 				{/*		/>*/}
 				{/*</Button>*/}
-				<Input disabled = {buttonAddDisabled} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px">
+				<Input disabled = {!(log === note.sender)} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px">
 				</Input>
-				<Button disabled = {buttonAddDisabled} onClick={() => remItem(index)}
+				<Button disabled = {!(log === note.sender)} onClick={() => remItem(index)}
 						 width="80px"
 						 height="95px"
 						 position="relative"
@@ -652,6 +653,14 @@ export default (() => {
 					удалить
 				</Button>
 			</Box>
+			<Multiselect
+				// options={Object.keys(firebase.database().ref().child('users'))}
+				options = {usersName}
+				selectedValues={[...note.recipients]}
+				//selectedValues={() => {if(note.recipients != null) {alert('ok'); return [...note.recipients]}}}
+				isObject={false}></Multiselect>
+			</div>
+			)
 
 
 
@@ -683,7 +692,7 @@ export default (() => {
 		/>
 		<Box>
 			<Input value={email} onChange={event => setEmail(event.target.value)} />
-			<Input value={password} onChange={event => setPassword(event.target.value)} />
+			<Input type = 'password' value={password} onChange={event => setPassword(event.target.value)} />
 			<Button onClick={() => registration(email, password)}>register</Button>
 		</Box>
 		<Section>
