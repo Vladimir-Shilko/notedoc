@@ -87,8 +87,8 @@ export default (() => {
 	}
 	async function login(email, password) {
 		try {
-			alert('Добро пожаловать, '+email)
 			const data = await firebase.auth().signInWithEmailAndPassword(email, password)
+			alert('Добро пожаловать, '+email)
 			setIsAuth(true);
 			localStorage.setItem('id', data.user.uid)
 			console.log(data.user.uid)
@@ -276,7 +276,8 @@ export default (() => {
 			let indexFile = (myFiles[index].length-1)
 			let uploadFile = storage.child('images/'+notes[index].idDocument).put(myFiles[index][0])
 			//storage.put(file[0])
-			let recipients = notes[index].recipient.split(',')
+			//let recipients = notes[index].recipient.split(',')
+			let recipients = [...notes[index].recipients]
 			//recipients.push(log)
 			alert(log)
 			setlen(index+1)
@@ -286,6 +287,7 @@ export default (() => {
 					dateOfTheCreate:notes[index].dateOfTheCreate,
 					description:notes[index].description,
 					recipient:notes[index].recipient,
+					recipients:[...notes[index].recipients],
 					idDocument:notes[index].idDocument,
 					sender:notes[index].sender
 				}
@@ -308,6 +310,7 @@ export default (() => {
 										dateOfTheCreate:notes[index].dateOfTheCreate,
 										description:notes[index].description,
 										recipient:notes[index].recipient,
+										recipients:[...notes[index].recipients],
 										idDocument:notes[index].idDocument,
 										sender:notes[index].sender
 									}
@@ -331,11 +334,13 @@ export default (() => {
 												dateOfTheCreate:notes[index].dateOfTheCreate,
 												description:notes[index].description,
 												recipient:notes[index].recipient,
+												recipients:[...notes[index].recipients],
 												idDocument:notes[index].idDocument,
 												sender:notes[index].sender
 
 											}
 										)
+										break;
 									}
 									console.log(lengthOfDocs)
 								}
@@ -349,6 +354,7 @@ export default (() => {
 									dateOfTheCreate:notes[index].dateOfTheCreate,
 									description:notes[index].description,
 									recipient:notes[index].recipient,
+									recipients:[...notes[index].recipients],
 									idDocument:notes[index].idDocument,
 									sender:notes[index].sender
 								}
@@ -368,7 +374,8 @@ export default (() => {
 	function remItem(index) {
 		try
 		{
-			let recipients = notes[index].recipient.split(',');
+			//let recipients = notes[index].recipient.split(',');
+			let recipients = [...notes[index].recipients]
 			let removeId = notes[index].idDocument;
 			//recipients.push(log);
 			let data = firebase.database().ref().child('users').child(log).child('userDocs');
@@ -548,6 +555,7 @@ export default (() => {
 		let dataDocs = firebase.database().ref().child('users/'+log+'/userDocs')
 		dataDocs.on('value', function (docs)
 		{
+			setNotes([])
 			let alldocs = docs.val();
 			if(alldocs == null) return 0;
 			let inbox = [];
@@ -561,6 +569,7 @@ export default (() => {
 					if(+(Date.now()) < +(new Date(Date.parse(inbox[i].dateOfTheEnd))))
 					{
 						inbox.splice(i,1);
+						i--;
 					}
 				}
 			}
@@ -569,11 +578,19 @@ export default (() => {
 				outbox = alldocs.outbox;
 				for(let i = 0; i < outbox.length; i++)
 				{
-					if(outbox[i] == null) continue;
-					if(+(Date.now()) < +(new Date(Date.parse(outbox[i].dateOfTheEnd))))
+					if(outbox[i] == null)
 					{
 						outbox.splice(i,1);
 					}
+					else if(+(Date.now()) < +(new Date(Date.parse(outbox[i].dateOfTheEnd))))
+					{
+						outbox.splice(i,1);
+						i--;
+					}
+					// if(+(Date.now()) < +(new Date(Date.parse(outbox[i].dateOfTheEnd))))
+					// {
+					// 	outbox.splice(i,1);
+					// }
 				}
 			}
 			setNotes([...inbox, ...outbox])
@@ -585,13 +602,17 @@ export default (() => {
 		//await loadOutBox();
 		setValue(value+1);
 		setFile([...file, null])
-		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', idDocument: Math.floor(Math.random()*1000000),sender: log, filePath: ''}]);
+		setNotes([...notes, {dateOfTheCreate: '2021-11-11', dateOfTheEnd: '2021-11-11', description: '', recipient: '', recipients: [], idDocument: Math.floor(Math.random()*1000000),sender: log, filePath: ''}]);
+	}
+	function onSelect(selectedList, selectedItem)
+	{
+		alert('Ok')
 	}
 	try
 	{
 		var result = notes.map((note, index) => {
-			return(<div>
-				<Box disabled = {!(log === note.sender)} key = {note.documentId} height="100px">
+			return(<div key = {note.documentId}>
+				<Box disabled = {!(log === note.sender)} height="100px">
 				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
 				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" bottom="20px">
 					скачать
@@ -653,10 +674,13 @@ export default (() => {
 					удалить
 				</Button>
 			</Box>
-			<Multiselect
+			<Multiselect disabled = {!(log === note.sender)}
 				// options={Object.keys(firebase.database().ref().child('users'))}
 				options = {usersName}
 				selectedValues={[...note.recipients]}
+				onSelect={(selectedList, selectedItem) => {note.recipients = [...selectedList];setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
+				// OnSelect = {() => alert(note.recipients)}
+				// OnRemove = {() => alert(note.recipients)}
 				//selectedValues={() => {if(note.recipients != null) {alert('ok'); return [...note.recipients]}}}
 				isObject={false}></Multiselect>
 			</div>
