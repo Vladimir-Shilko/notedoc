@@ -11,8 +11,8 @@ import 'firebase/database'
 import 'firebase/storage'
 import 'firebase/messaging'
 import async from "async";
-import avatarImage from './sale_agent.webp'
-import multi from './multiselect.css'
+//import avatarImage from './sale_agent.webp'
+//import multi from './multiselect.css'
 const firebaseConfig = {
 	apiKey: "AIzaSyD8qxHIjM1Q-z-Z4FwjyZZ1ntCRbQ2WKoI",
 	authDomain: "notedoc-44442.firebaseapp.com",
@@ -34,9 +34,9 @@ export default (() => {
 			const data = await firebase.auth().createUserWithEmailAndPassword(email, password)
 			alert('Вы успешно зарегистрировались');
 			userLogin = email.substr(0, email.indexOf('@'));
-			firebase.database().ref().child(userLogin).child('userInfo').set(
+			firebase.database().ref().child('users').child(email.substr(0, email.indexOf('@'))).child('userInfo').set(
 				{
-					login: userLogin,
+					login: email.substr(0, email.indexOf('@')),
 					email: email,
 					password: password,
 					id: data.user.uid
@@ -171,101 +171,7 @@ export default (() => {
 	};
 	useEffect(() =>
 	{
-		// try
-		// {
-		// 	notes.forEach(function (note, i, allNotes)
-		// 	{
-		//
-		// 	})
-		// }
-		// catch(error)
-		// {
-		// 	console.log(error)
-		// }
-		//setColors([])
-		// try
-		// {
-		// 	notes.forEach(function(note, i, allnotes)
-		// 	{
-		// 		if(+(Date.now()) >= +(new Date(Date.parse(note.dateOfTheEnd))))
-		// 		{
-		// 			alert(+(new Date(Date.parse(note.dateOfTheEnd))))
-		// 			let recipients = note.recipient.split(',')
-		//
-		// 			recipients.forEach(function (item, i,arr)
-		// 			{
-		// 				const dbRef = firebase.database().ref();
-		// 				dbRef.child("users").child(item).child('userDocs').child('overdue').get().then((snapshot) => {
-		// 					if (snapshot.exists()) {
-		// 						//let userl = snapshot.val();
-		// 						let userdocsin = snapshot.val();
-		// 						if(userdocsin == null || userdocsin.length == null)
-		// 						{
-		// 							let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
-		// 								{
-		// 									dateOfTheEnd:note.dateOfTheEnd,
-		// 									dateOfTheCreate:note.dateOfTheCreate,
-		// 									description:note.description,
-		// 									recipient:note.recipient,
-		// 									idDocument:note.idDocument,
-		// 									sender:note.sender
-		// 								}
-		// 							)
-		// 						}
-		// 						else
-		// 						{
-		// 							console.log(userdocsin)
-		// 								//setlen(userdocsin.length)
-		// 							console.log(lengthOfDocs);
-		// 							//let e = prompt('dd')
-		// 							// for(let i = 0; i < allnotes.length;i++)
-		// 							// {
-		// 								console.log(userdocsin[i]);
-		// 								if(userdocsin[i] == null)
-		// 								{
-		// 									alert(i)
-		// 									let database = firebase.database().ref('users/'+item+'/userDocs/overdue/'+i).set(
-		// 										{
-		// 											dateOfTheEnd:note.dateOfTheEnd,
-		// 											dateOfTheCreate:note.dateOfTheCreate,
-		// 											description:note.description,
-		// 											recipient:note.recipient,
-		// 											idDocument:note.idDocument,
-		// 											sender:note.sender
-		// 										}
-		// 									)
-		// 								//}
-		// 								console.log(lengthOfDocs)
-		// 							}
-		// 							//setNotes([...notes,...userdocsin])
-		// 						}
-		// 					} else {
-		// 						let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
-		// 							{
-		// 								dateOfTheEnd:note.dateOfTheEnd,
-		// 								dateOfTheCreate:note.dateOfTheCreate,
-		// 								description:note.description,
-		// 								recipient:note.recipient,
-		// 								idDocument:note.idDocument,
-		// 								sender:note.sender
-		// 							}
-		// 						)
-		// 					}
-		// 				})
-		// 			})
-		//
-		//
-		// 		}
-		// 		else
-		// 		{
-		// 		}
-		// 	})
-		// }
-		// catch(error)
-		// {
-		// 	console.log(error)
-		// }
-
+	
 	})
 	function sendDoc(index)
 	{
@@ -482,6 +388,7 @@ export default (() => {
 		{
 			//setColors([])
 			userIn = snap.val();
+			if(userIn == null || userIn.userDocs == null) return 0;
 			userdocsIn = userIn.userDocs.inbox;
 			console.log(userdocsIn)
 			if(userdocsIn == null)
@@ -522,6 +429,7 @@ export default (() => {
 		database.child(log).on('value', function(snap)
 		{
 			userOut = snap.val();
+			if(userOut == null || userOut.userDocs == null) return 0;
 			userdocsOut = userOut.userDocs.outbox;
 			console.log(userdocsOut)
 			if(userdocsOut == null)
@@ -612,64 +520,75 @@ export default (() => {
 	{
 		var result = notes.map((note, index) => {
 			return(<div key = {note.documentId}>
-				<Box disabled = {!(log === note.sender)} height="100px">
-				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
-				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" bottom="20px">
+				<Box disabled = {!(log === note.sender)} height="100px" width = '100%'>
+				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative"  type="text" width = '15%' />
+				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" width = '8%'>
 					скачать
 				</Button>
 				<Button
 					position="relative"
-					bottom="20px"
-					height="95px"
-					display="inline"
-					width="350px"
+					//bottom="20px"
+					height="95px" width="20%" display="inline"
 				>
-					<Input  type="file" onChange={event =>{myFiles[index] = event.target.files; console.log(event.target.files)}} width="230px" />
+					<Input  type="file" onChange={event =>{myFiles[index] = event.target.files; console.log(event.target.files)}}  width="50%" position="relative" right="20%" />
 					загрузить
 				</Button>
-				<Button background = {colors[index]}>
-					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}/>
-					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
-				</Button>
-				<Button  onClick={() => {sendDoc(index)}}
-					width="110px"
-					overflow-x="visible"
+				<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
+				type="date"
+				height="95px"
+				width="15%"
+				//min-width="182px"
+				font="normal 300 16px/1.5 -apple-system, system-ui, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
+				/>
+				<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
+				type="date"
+				height="95px"
+				width="15%"
+				//min-width="182px"
+				font="normal 300 16px/1.5 -apple-system, system-ui, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
+				/>
+				{/* <Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} type="date"
+		width="10%"
+		position="relative"
+		//top="20px"
+		height="95px"
+		min-width="180px"/>
+
+		<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} type="date"
+		width="10%"
+		position="relative"
+		height="95px"
+		min-width="180px" /> */}
+		<Button  onClick={() => {sendDoc(index)}}
+					width="8%"
+					//overflow-x="visible"
 					display="inline-block"
 					height="95px"
 					position="relative"
-					bottom="20px"
+					bottom={0}
+					color="#000000"
+					//right="15%"
 						 color="#000000"
 				>
-					{/*<Multiselect*/}
-					{/*// options={Object.keys(firebase.database().ref().child('users'))}*/}
-					{/*options = {usersName}*/}
-					{/*isObject={false}></Multiselect>*/}
 					отправить
 				</Button>
-				{/*<Button width="200px"*/}
-				{/*		max-width="150px"*/}
-				{/*		overflow-x="visible"*/}
-				{/*		display="inline-block"*/}
-				{/*		height="95px"*/}
-				{/*		position="relative"*/}
-				{/*		bottom="20px">*/}
-				{/*		<Multiselect*/}
-				{/*			// options={Object.keys(firebase.database().ref().child('users'))}*/}
-				{/*			style={multiselect_css}*/}
-				{/*			max-width = '100px'*/}
-				{/*			//width = '200px'*/}
-				{/*			options = {usersName}*/}
-				{/*			isObject={false}*/}
-				{/*		/>*/}
-				{/*</Button>*/}
-				<Input disabled = {!(log === note.sender)} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px">
-				</Input>
+				<Button onClick = {() => alert('скоро доработаем')}
+				width="8%"
+				height="95px"
+				position="relative"
+				bottom={0}
+				background="#008000"
+				//right="15%"
+				>
+				подтвердить
+				</Button>
 				<Button disabled = {!(log === note.sender)} onClick={() => remItem(index)}
-						 width="80px"
+						 width="8%"
 						 height="95px"
 						 position="relative"
-						 bottom="20px"
+						 bottom={0}
 						 background="#cc0003"
+						 //right="15%"
 				>
 					удалить
 				</Button>
@@ -679,16 +598,9 @@ export default (() => {
 				options = {usersName}
 				selectedValues={[...note.recipients]}
 				onSelect={(selectedList, selectedItem) => {note.recipients = [...selectedList];setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
-				// OnSelect = {() => alert(note.recipients)}
-				// OnRemove = {() => alert(note.recipients)}
-				//selectedValues={() => {if(note.recipients != null) {alert('ok'); return [...note.recipients]}}}
 				isObject={false}></Multiselect>
 			</div>
 			)
-
-
-
-			//index++;
 		});
 	}
 	catch(error)
@@ -700,7 +612,7 @@ export default (() => {
 		<GlobalQuarklyPageStyles pageUrl={"index"} />
 		<Helmet>
 			<title>
-				Quarkly export
+				NoteDoc
 			</title>
 			<meta name={"description"} content={"Web site created using quarkly.io"} />
 			<link rel={"shortcut icon"} href={"https://uploads.quarkly.io/readme/cra/favicon-32x32.ico"} type={"image/x-icon"} />
@@ -709,11 +621,6 @@ export default (() => {
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-analytics.js"></script>
 		</body>
-		<Multiselect
-			// options={Object.keys(firebase.database().ref().child('users'))}
-			options = {usersName}
-			isObject={false}
-		/>
 		<Box>
 			<Input value={email} onChange={event => setEmail(event.target.value)} />
 			<Input type = 'password' value={password} onChange={event => setPassword(event.target.value)} />
@@ -742,7 +649,7 @@ export default (() => {
 				<Button  onClick={() => checkLogin()} position="relative" left="150px">
 					войти
 				</Button>
-				<Image src = {avatarImage} alt = 'avatarImage' width="100px" height="100px" position="relative" left="0px" />
+				<Image src = 'https://ic.pics.livejournal.com/misscaprizzz/85343571/68516/68516_original.jpg'alt = 'avatarImage' width="100px" height="100px" position="relative" left="0px" />
 			</Box>
 		</Section>
 		<Box>
