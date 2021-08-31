@@ -1,20 +1,18 @@
 import React, {useEffect, useState} from "react";
 import theme from "theme";
-import { Theme, Link, Text, Box, Button, Image, Section, Input, Span, Icon } from "@quarkly/widgets";
+import { Theme, Link, Text, Box, Button, Image, Section, Input } from "@quarkly/widgets";
 import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "global-page-styles";
-import { RawHtml, Override, StackItem, Stack } from "@quarkly/components";
+import { RawHtml } from "@quarkly/components";
 import { Multiselect } from 'multiselect-react-dropdown';
-import { MdLocationOn, MdEmail, MdPhone } from "react-icons/md";
-import { FaFacebookF, FaTwitter, FaLinkedinIn } from "react-icons/fa";
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
 import 'firebase/storage'
 import 'firebase/messaging'
 import async from "async";
-//import avatarImage from './sale_agent.webp'
-//import multi from './multiselect.css'
+import avatarImage from './sale_agent.webp'
+import multi from './multiselect.css'
 const firebaseConfig = {
 	apiKey: "AIzaSyD8qxHIjM1Q-z-Z4FwjyZZ1ntCRbQ2WKoI",
 	authDomain: "notedoc-44442.firebaseapp.com",
@@ -31,24 +29,19 @@ firebase.initializeApp(firebaseConfig);
 
 export default (() => {
 
-	async function registration(email, password, repPassword) {
+	async function registration(email, password) {
 		try {
-			if(email != '' && password != '' && password === repPassword)
-			{
-				const data = await firebase.auth().createUserWithEmailAndPassword(email, password)
-				alert('Вы успешно зарегистрировались');
-				userLogin = email.substr(0, email.indexOf('@'));
-				firebase.database().ref().child('users').child(email.substr(0, email.indexOf('@'))).child('userInfo').set(
-					{
-						login: email.substr(0, email.indexOf('@')),
-						email: email,
-						password: password,
-						id: data.user.uid
-					}
-				)
-			}
-			else{alert('ошибка, проверьте введённые данные')}
-			
+			const data = await firebase.auth().createUserWithEmailAndPassword(email, password)
+			alert('Вы успешно зарегистрировались');
+			userLogin = email.substr(0, email.indexOf('@'));
+			firebase.database().ref().child(userLogin).child('userInfo').set(
+				{
+					login: userLogin,
+					email: email,
+					password: password,
+					id: data.user.uid
+				}
+			)
 		} catch (error) {
 			console.log(error.message)
 			throw error
@@ -86,11 +79,10 @@ export default (() => {
 		}
 		else
 		{
-			setDisplay({startPage: 'flex', profile: 'none', logPass: 'block', repPass: 'none', signIn: 'block'})
-			// email = prompt('введите свою почту');
-			// password = prompt('введите пароль');
-			// setEmail(email); setPassword(password)
-			// login(email, password)
+			email = prompt('введите свою почту');
+			password = prompt('введите пароль');
+			setEmail(email); setPassword(password)
+			login(email, password)
 		}
 	}
 	async function login(email, password) {
@@ -98,8 +90,6 @@ export default (() => {
 			const data = await firebase.auth().signInWithEmailAndPassword(email, password)
 			alert('Добро пожаловать, '+email)
 			setIsAuth(true);
-			//setDisplay(prevState => {prevState.set(startPage, 'none'), prevState.set(profile, 'inline')})
-			setDisplay({startPage: 'none', profile: 'flex', logPass: 'none', repPass: 'none', signIn: 'none'})
 			localStorage.setItem('id', data.user.uid)
 			console.log(data.user.uid)
 			//setAddDisabled(false)
@@ -151,24 +141,19 @@ export default (() => {
 			//throw error
 		}
 	}
-	async function signOut()
-	{
-		// let signOutCheck = confirm('вы действительно хотите выйти?');
-		if(window.confirm('вы действительно хотите выйти?'))
+	let ind = [];
+	let multiselect_css =
 		{
-			
-			await firebase.auth().signOut();
-			setNotes([]);
-			setDisplay({startPage: 'flex', profile: 'none', logPass: 'none', repPass: 'none', signIn: 'none'});
-			localStorage.removeItem('id');
-			setEmail(''); setPassword('');
+			width: "200px",
+			display: 'block',
+			border: '1px',
+			solid: '#cdd6f3',
+			color: '#a8acc9',
 		}
-	}
 	const [notes, setNotes] = useState([]);
 	const [value, setValue] = useState();
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('');
-	const [repPassword, setRepPassword] = useState('')
 	const [id, setId] = useState('')
 	const[log, setLog] = useState('')
 	const [lengthOfDocs, setlen] = useState();
@@ -176,23 +161,124 @@ export default (() => {
 	const [file, setFile] = useState([]);
 	const [colors, setColors] = useState([])
 	const [usersName, setUsersName] = useState([])
-	const [display, setDisplay] = useState({startPage: 'flex', profile: 'none', logPass: 'none', repPass: 'none', signIn: 'none'})
+	//var recipients_ = []
+	// this.state = {
+	// 	options: [{name: 'Srigar', id: 1},{name: 'Sam', id: 2}]
+	// };
 	var myFiles = [];
 	var metadata = {
 		contentType: 'image/jpeg'
 	};
 	useEffect(() =>
 	{
-	
+		// try
+		// {
+		// 	notes.forEach(function (note, i, allNotes)
+		// 	{
+		//
+		// 	})
+		// }
+		// catch(error)
+		// {
+		// 	console.log(error)
+		// }
+		//setColors([])
+		// try
+		// {
+		// 	notes.forEach(function(note, i, allnotes)
+		// 	{
+		// 		if(+(Date.now()) >= +(new Date(Date.parse(note.dateOfTheEnd))))
+		// 		{
+		// 			alert(+(new Date(Date.parse(note.dateOfTheEnd))))
+		// 			let recipients = note.recipient.split(',')
+		//
+		// 			recipients.forEach(function (item, i,arr)
+		// 			{
+		// 				const dbRef = firebase.database().ref();
+		// 				dbRef.child("users").child(item).child('userDocs').child('overdue').get().then((snapshot) => {
+		// 					if (snapshot.exists()) {
+		// 						//let userl = snapshot.val();
+		// 						let userdocsin = snapshot.val();
+		// 						if(userdocsin == null || userdocsin.length == null)
+		// 						{
+		// 							let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
+		// 								{
+		// 									dateOfTheEnd:note.dateOfTheEnd,
+		// 									dateOfTheCreate:note.dateOfTheCreate,
+		// 									description:note.description,
+		// 									recipient:note.recipient,
+		// 									idDocument:note.idDocument,
+		// 									sender:note.sender
+		// 								}
+		// 							)
+		// 						}
+		// 						else
+		// 						{
+		// 							console.log(userdocsin)
+		// 								//setlen(userdocsin.length)
+		// 							console.log(lengthOfDocs);
+		// 							//let e = prompt('dd')
+		// 							// for(let i = 0; i < allnotes.length;i++)
+		// 							// {
+		// 								console.log(userdocsin[i]);
+		// 								if(userdocsin[i] == null)
+		// 								{
+		// 									alert(i)
+		// 									let database = firebase.database().ref('users/'+item+'/userDocs/overdue/'+i).set(
+		// 										{
+		// 											dateOfTheEnd:note.dateOfTheEnd,
+		// 											dateOfTheCreate:note.dateOfTheCreate,
+		// 											description:note.description,
+		// 											recipient:note.recipient,
+		// 											idDocument:note.idDocument,
+		// 											sender:note.sender
+		// 										}
+		// 									)
+		// 								//}
+		// 								console.log(lengthOfDocs)
+		// 							}
+		// 							//setNotes([...notes,...userdocsin])
+		// 						}
+		// 					} else {
+		// 						let database = firebase.database().ref('users/'+item+'/userDocs/overdue/0').set(
+		// 							{
+		// 								dateOfTheEnd:note.dateOfTheEnd,
+		// 								dateOfTheCreate:note.dateOfTheCreate,
+		// 								description:note.description,
+		// 								recipient:note.recipient,
+		// 								idDocument:note.idDocument,
+		// 								sender:note.sender
+		// 							}
+		// 						)
+		// 					}
+		// 				})
+		// 			})
+		//
+		//
+		// 		}
+		// 		else
+		// 		{
+		// 		}
+		// 	})
+		// }
+		// catch(error)
+		// {
+		// 	console.log(error)
+		// }
+
 	})
 	function sendDoc(index)
 	{
 		try
 		{
 			let storage = firebase.storage().ref()
+			//let indexFile = (file[index].length-1)
 			let indexFile = (myFiles[index].length-1)
 			let uploadFile = storage.child('images/'+notes[index].idDocument).put(myFiles[index][0])
+			//storage.put(file[0])
+			//let recipients = notes[index].recipient.split(',')
 			let recipients = [...notes[index].recipients]
+			//recipients.push(log)
 			alert(log)
 			setlen(index+1)
 			let database = firebase.database().ref('users/'+log+'/userDocs/outbox/'+index).set(
@@ -291,6 +377,7 @@ export default (() => {
 			//let recipients = notes[index].recipient.split(',');
 			let recipients = [...notes[index].recipients]
 			let removeId = notes[index].idDocument;
+			//recipients.push(log);
 			let data = firebase.database().ref().child('users').child(log).child('userDocs');
 			data.on('value', function (docsRef)
 			{
@@ -342,6 +429,21 @@ export default (() => {
 
 							}
 						}
+
+						// if(inbox.length != null)
+						// {
+						// 	for(let i = 0; i < inbox.length; i++)
+						// 	{
+						// 		if(removeId === inbox[i].idDocument)
+						// 		{
+						// 			//let removingElem = firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').
+						// 			//inbox.i = null;
+						// 			//inbox[i].removeValue();
+						// 			firebase.database().ref().child('users').child(item).child('userDocs').child('inbox').child(i).remove();
+						// 		}
+						// 	}
+						// }
+
 					})
 				}
 			})
@@ -380,7 +482,6 @@ export default (() => {
 		{
 			//setColors([])
 			userIn = snap.val();
-			if(userIn == null || userIn.userDocs == null) return 0;
 			userdocsIn = userIn.userDocs.inbox;
 			console.log(userdocsIn)
 			if(userdocsIn == null)
@@ -421,7 +522,6 @@ export default (() => {
 		database.child(log).on('value', function(snap)
 		{
 			userOut = snap.val();
-			if(userOut == null || userOut.userDocs == null) return 0;
 			userdocsOut = userOut.userDocs.outbox;
 			console.log(userdocsOut)
 			if(userdocsOut == null)
@@ -487,6 +587,10 @@ export default (() => {
 						outbox.splice(i,1);
 						i--;
 					}
+					// if(+(Date.now()) < +(new Date(Date.parse(outbox[i].dateOfTheEnd))))
+					// {
+					// 	outbox.splice(i,1);
+					// }
 				}
 			}
 			setNotes([...inbox, ...outbox])
@@ -508,63 +612,64 @@ export default (() => {
 	{
 		var result = notes.map((note, index) => {
 			return(<div key = {note.documentId}>
-				<Box disabled = {!(log === note.sender)} height="100px" width = '100%'>
-				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative"  type="text" width = '15%' />
-				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" width = '8%'>
+				<Box disabled = {!(log === note.sender)} height="100px">
+				<Input disabled = {!(log === note.sender)} value={note.description} onChange={event => {note.description = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} height="95px" position="relative" bottom="20px" type="text" />
+				<Button  onClick={() => downloadFile(index)} height="95px" position="relative" bottom="20px">
 					скачать
 				</Button>
 				<Button
 					position="relative"
-					//bottom="20px"
-					height="95px" width="20%" display="inline"
+					bottom="20px"
+					height="95px"
+					display="inline"
+					width="350px"
 				>
-					<Input  type="file" onChange={event =>{myFiles[index] = event.target.files; console.log(event.target.files)}}  width="50%" position="relative" right="20%" />
+					<Input  type="file" onChange={event =>{myFiles[index] = event.target.files; console.log(event.target.files)}} width="230px" />
 					загрузить
 				</Button>
-				<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
-				type="date"
-				height="95px"
-				width="15%"
-				//min-width="182px"
-				font="normal 300 16px/1.5 -apple-system, system-ui, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
-				/>
-				<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
-				type="date"
-				height="95px"
-				width="15%"
-				//min-width="182px"
-				font="normal 300 16px/1.5 -apple-system, system-ui, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
-				/>
-		<Button  onClick={() => {sendDoc(index)}} disabled = {!(log === note.sender)}
-					width="8%"
-					//overflow-x="visible"
+				<Button background = {colors[index]}>
+					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheCreate} onChange={event => {event.preventDefault(); note.dateOfTheCreate = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}/>
+					<Input disabled = {!(log === note.sender)} type="date" value={note.dateOfTheEnd} onChange={event => {event.preventDefault();note.dateOfTheEnd = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}} display="block" />
+				</Button>
+				<Button  onClick={() => {sendDoc(index)}}
+					width="110px"
+					overflow-x="visible"
 					display="inline-block"
 					height="95px"
 					position="relative"
-					bottom={0}
-					color="#000000"
-					//right="15%"
+					bottom="20px"
 						 color="#000000"
 				>
+					{/*<Multiselect*/}
+					{/*// options={Object.keys(firebase.database().ref().child('users'))}*/}
+					{/*options = {usersName}*/}
+					{/*isObject={false}></Multiselect>*/}
 					отправить
 				</Button>
-				<Button onClick = {() => alert('скоро доработаем')}
-				width="8%"
-				height="95px"
-				position="relative"
-				bottom={0}
-				background="#008000"
-				//right="15%"
-				>
-				подтвердить
-				</Button>
+				{/*<Button width="200px"*/}
+				{/*		max-width="150px"*/}
+				{/*		overflow-x="visible"*/}
+				{/*		display="inline-block"*/}
+				{/*		height="95px"*/}
+				{/*		position="relative"*/}
+				{/*		bottom="20px">*/}
+				{/*		<Multiselect*/}
+				{/*			// options={Object.keys(firebase.database().ref().child('users'))}*/}
+				{/*			style={multiselect_css}*/}
+				{/*			max-width = '100px'*/}
+				{/*			//width = '200px'*/}
+				{/*			options = {usersName}*/}
+				{/*			isObject={false}*/}
+				{/*		/>*/}
+				{/*</Button>*/}
+				<Input disabled = {!(log === note.sender)} value={note.recipient} onChange={event => {note.recipient = event.target.value;setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}height="95px" position="relative" bottom="20px" width="180px">
+				</Input>
 				<Button disabled = {!(log === note.sender)} onClick={() => remItem(index)}
-						 width="8%"
+						 width="80px"
 						 height="95px"
 						 position="relative"
-						 bottom={0}
+						 bottom="20px"
 						 background="#cc0003"
-						 //right="15%"
 				>
 					удалить
 				</Button>
@@ -574,9 +679,16 @@ export default (() => {
 				options = {usersName}
 				selectedValues={[...note.recipients]}
 				onSelect={(selectedList, selectedItem) => {note.recipients = [...selectedList];setNotes([...notes.slice(0, index),note, ...notes.slice(index + 1)])}}
+				// OnSelect = {() => alert(note.recipients)}
+				// OnRemove = {() => alert(note.recipients)}
+				//selectedValues={() => {if(note.recipients != null) {alert('ok'); return [...note.recipients]}}}
 				isObject={false}></Multiselect>
 			</div>
 			)
+
+
+
+			//index++;
 		});
 	}
 	catch(error)
@@ -588,7 +700,7 @@ export default (() => {
 		<GlobalQuarklyPageStyles pageUrl={"index"} />
 		<Helmet>
 			<title>
-				NoteDoc
+				Quarkly export
 			</title>
 			<meta name={"description"} content={"Web site created using quarkly.io"} />
 			<link rel={"shortcut icon"} href={"https://uploads.quarkly.io/readme/cra/favicon-32x32.ico"} type={"image/x-icon"} />
@@ -597,12 +709,16 @@ export default (() => {
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-analytics.js"></script>
 		</body>
-		<Section display = {display.profile}>
-		{/* <Box>
+		<Multiselect
+			// options={Object.keys(firebase.database().ref().child('users'))}
+			options = {usersName}
+			isObject={false}
+		/>
+		<Box>
 			<Input value={email} onChange={event => setEmail(event.target.value)} />
 			<Input type = 'password' value={password} onChange={event => setPassword(event.target.value)} />
 			<Button onClick={() => registration(email, password)}>register</Button>
-		</Box> */}
+		</Box>
 		<Section>
 			<Box
 				display="flex"
@@ -623,39 +739,87 @@ export default (() => {
 						ID: {id}
 					</Text>
 				</Box>
-				{/* <Button  onClick={() => checkLogin()} position="relative" left="150px">
+				<Button  onClick={() => checkLogin()} position="relative" left="150px">
 					войти
-				</Button> */}
-				<Button  onClick={() => signOut()} position="relative" left="150px">
-					выйти
 				</Button>
-				<Image src = 'https://ic.pics.livejournal.com/misscaprizzz/85343571/68516/68516_original.jpg'alt = 'avatarImage' width="100px" height="100px" position="relative" left="0px" />
+				<Image src = {avatarImage} alt = 'avatarImage' width="100px" height="100px" position="relative" left="0px" />
 			</Box>
 		</Section>
 		<Box>
-			<Button onClick={() => loadInbox()} disabled = {!isAuth}>
+			<Button onClick={() => loadInbox()}>
 				входящие
 			</Button>
-			<Button onClick={() => loadOutBox()} disabled = {!isAuth}>
+			<Button onClick={() => loadOutBox()}>
 				исходящие
 			</Button>
-			<Button display = 'none' disabled = 'true'>
+			<Button>
 				ожидают подтверждения
 			</Button>
-			<Button onClick={() => loadOverdue()} disabled = {!isAuth}>
+			<Button onClick={() => loadOverdue()}>
 				просроченные
 			</Button>
-			<Button display = 'none' disabled = 'true'>
+			<Button>
 				выполненные
 			</Button>
 		</Box>
 		<Box />
-		<div >
+		{/*<Box height="100px">*/}
+		{/*	<Input height="95px" position="relative" bottom="20px" type="text" />*/}
+		{/*	<Button height="95px" position="relative" bottom="20px">*/}
+		{/*		скачать*/}
+		{/*	</Button>*/}
+		{/*	<Button*/}
+		{/*		position="relative"*/}
+		{/*		bottom="20px"*/}
+		{/*		height="95px"*/}
+		{/*		display="inline"*/}
+		{/*		width="350px"*/}
+		{/*	>*/}
+		{/*		<Input type="file" width="230px" />*/}
+		{/*		загрузить*/}
+		{/*	</Button>*/}
+		{/*	<Input*/}
+		{/*		type="date"*/}
+		{/*		position="absolute"*/}
+		{/*		bottom="160px"*/}
+		{/*		height="45px"*/}
+		{/*		top="250px"*/}
+		{/*		max-width="140px"*/}
+		{/*	/>*/}
+		{/*	<Input*/}
+		{/*		position="relative"*/}
+		{/*		type="date"*/}
+		{/*		height="45px"*/}
+		{/*		top="5px"*/}
+		{/*		bottom={0}*/}
+		{/*		max-width="140px"*/}
+		{/*	/>*/}
+		{/*	<Button*/}
+		{/*		width="110px"*/}
+		{/*		overflow-x="visible"*/}
+		{/*		display="inline-block"*/}
+		{/*		height="95px"*/}
+		{/*		position="relative"*/}
+		{/*		bottom="20px"*/}
+		{/*	>*/}
+		{/*		отправить*/}
+		{/*	</Button>*/}
+		{/*	<Input height="95px" position="relative" bottom="20px" />*/}
+		{/*	<Button*/}
+		{/*		width="80px"*/}
+		{/*		height="95px"*/}
+		{/*		position="relative"*/}
+		{/*		bottom="20px"*/}
+		{/*		background="#cc0003"*/}
+		{/*	>*/}
+		{/*		удалить*/}
+		{/*	</Button>*/}
+		{/*</Box>*/}
+		<div>
 			{result}
-			{/* <input value={value} onChange={event => setValue(event.target.value)} /> */}
+			<input value={value} onChange={event => setValue(event.target.value)} />
 			<button disabled = {buttonAddDisabled} onClick={() => createDoc()}>add</button>
-		</div>
-		</Section>
+		</div>;
 		<Link
 			font={"--capture"}
 			font-size={"10px"}
@@ -678,152 +842,6 @@ export default (() => {
 		>
 			Made on Quarkly
 		</Link>
-		<Section display = {display.startPage}
-			color="--light"
-			padding="100px 0"
-			sm-padding="40px 0"
-			position="relative"
-			background="linear-gradient(0deg,rgba(25, 30, 34, 0.8) 0%,rgba(25, 30, 34, 0.8) 100%),--color-darkL2 url(http://s13.ru/ru/files/news/image/1280/0/1540812212_1.jpg)"
-		>
-			<Stack>
-				<StackItem width="50%" md-width="100%">
-					<Override slot="StackItemContent" flex-direction="column" />
-					<Box
-						padding="0 0 0 64px"
-						sm-padding="64px 0 0 0"
-						margin="32px 0 0 0"
-						max-width="360px"
-						position="relative"
-					>
-						<Icon
-							position="absolute"
-							size="48px"
-							top="0"
-							left="0"
-							category="md"
-							icon={MdLocationOn}
-						/>
-						<Text as="h4" margin="6px 0" font="--base">
-							Visit us
-						</Text>
-						<Text as="p" margin="6px 0" font="--headline3">
-							mostovaya 31, Grodno, Belarus
-						</Text>
-					</Box>
-					<Box
-						padding="0 0 0 64px"
-						sm-padding="64px 0 0 0"
-						margin="64px 0 0 0"
-						max-width="360px"
-						position="relative"
-					>
-						<Icon
-							position="absolute"
-							size="48px"
-							top="0"
-							left="0"
-							category="md"
-							icon={MdEmail}
-						/>
-						<Text as="h4" margin="6px 0" font="--base">
-							Email us
-						</Text>
-						<Text as="p" margin="6px 0" font="--headline3">
-							Shilko_VI_20@mf.grsu.by
-						</Text>
-					</Box>
-					<Box padding="0 0 0 64px" margin="64px 0 0 0" max-width="360px" position="relative">
-						<Icon
-							position="absolute"
-							size="48px"
-							top="0"
-							left="0"
-							category="md"
-							icon={MdPhone}
-						/>
-						<Text as="h4" margin="6px 0" font="--base">
-							Call us
-						</Text>
-						<Text as="p" margin="6px 0" font="--headline3">
-							-
-						</Text>
-					</Box>
-					<Box
-						padding="0 0 0 64px"
-						sm-padding="0"
-						margin="48px 0"
-						max-width="360px"
-						position="relative"
-						display="flex"
-					>
-						<Icon
-							category="fa"
-							icon={FaFacebookF}
-							width="48px"
-							height="48px"
-							size="24px"
-							margin-right="16px"
-							background="--color-primary"
-							border-radius="50%"
-						/>
-						<Icon
-							category="fa"
-							icon={FaTwitter}
-							width="48px"
-							height="48px"
-							size="24px"
-							margin-right="16px"
-							background="--color-primary"
-							border-radius="50%"
-						/>
-						<Icon
-							category="fa"
-							icon={FaLinkedinIn}
-							width="48px"
-							height="48px"
-							size="24px"
-							margin-right="16px"
-							background="--color-primary"
-							border-radius="50%"
-						/>
-					</Box>
-				</StackItem>
-				<StackItem width="50%" md-width="100%">
-					<Box
-						max-width="360px"
-						padding="56px 48px"
-						margin="0 0 0 auto"
-						md-max-width="100%"
-						background="--color-primary"
-					>
-						<Button onClick={() => checkLogin()}>
-							Вход
-						</Button>
-						<Button onClick= {() => {setDisplay({startPage: 'flex', profile: 'none', logPass: 'block', repPass: 'block', signIn: 'none'})}}>
-							Регистрация
-						</Button>
-						<Text display = {display.logPass} width="50px">
-							Email:
-						</Text>
-						<Input value={email} onChange={event => setEmail(event.target.value)} display = {display.logPass} />
-						<Text  display = {display.logPass}>
-							Пароль:
-						</Text>
-						<Input type = 'password' value={password} onChange={event => setPassword(event.target.value)} display = {display.logPass}/>
-						<Text display = {display.repPass}>
-							Повторите пароль:
-						</Text>
-						<Input type = 'password' value={repPassword} onChange={event => setRepPassword(event.target.value)} display = {display.repPass}/>
-						<Button onClick={() => login(email, password)} display = {display.signIn} width="233px">
-							войти
-						</Button>
-						<Button onClick={() => registration(email, password, repPassword)} display = {display.repPass} width="233px">
-							зарегистрироваться
-						</Button>
-					</Box>
-				</StackItem>
-			</Stack>
-		</Section>
 		<RawHtml>
 			<style place={"endOfHead"} rawKey={"60fe92edfb3a6f00181af8d3"}>
 				{":root {\n  box-sizing: border-box;\n}\n\n* {\n  box-sizing: inherit;\n}"}
